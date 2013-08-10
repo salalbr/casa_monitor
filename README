@@ -5,3 +5,11 @@ casa_monitor.py - Tool for querying ATS server and validating auth token
 
 # Standalone mode:
 ./casa_monitor.py [--verbose] mmelo3.lab.novell.com 443 lab.novell.com mmelo Novell001
+
+
+
+# Credits:
+Author: 'Maer Melo'
+License: 'Apache License, Version 2.0'
+Version: '0.1'
+Email: 'salalbr@gmail.com'
