@@ -65,11 +65,6 @@ def logger(result, log_file='monitor_casa.log'):
   else:
     f.write('[ ' + strftime("%d %b %Y %H:%M:%S", localtime()) + ' ]  [ ' + result['server'] + ' is '\
           + result['status'] + ' ]\n')
-  '''
-  f.write('[ ' + strftime("%d %b %Y %H:%M:%S", localtime()) + ' ]  [ ' + server + ' is ' + result + ' ]\n')
-  if result == 'unavailable':
-    print '[ ' + strftime("%d %b %Y %H:%M:%S", localtime()) + ' ]  [ ' + server + ' is ' + result + ' ]'
-  '''
   
 def check_authpolicy(options):
   url = 'https://' + options['server'] + ':' + options['port']  + '/CasaAuthTokenSvc/Rpc?method=GetAuthPolicy'
