@@ -129,19 +129,21 @@ def main():
     options = parse_conf(args[1])
     watcher(options)
   else:
-    options = { 'server': args[0],
-                'port': args[1],
-                'realm': args[2],
-                'username': args[3],
-                'password': args[4] }
-    if '--verbose' in args: options['verbose'] = True
+    if '--verbose' in args:
+      options = { 'verbose': True }
+      args.remove('--verbose')
+    options['server'] = args[0]
+    options['port'] = args[1]
+    options['realm'] = args[2]
+    options['username'] = args[3]
+    options['password'] = args[4]
 
     # Get Auth Policy    
     (sts_auth_policy, auth_policy) = check_authpolicy(options)
     if sts_auth_policy == True:
       print '[ ' + strftime("%d %b %Y %H:%M:%S", localtime()) + ' ]  [ ' + options['server'] + ' / GetAuthPolicy: success ]'
       if 'verbose' in options.keys():
-        print auth_policy, '\n'
+        print auth_policy
     else:
       print '[ ' + strftime("%d %b %Y %H:%M:%S", localtime()) + ' ]  [ ' + options['server'] + ' / GetAuthPolicy: failed ]'
       return 1
@@ -152,7 +154,7 @@ def main():
       options['sessiontoken'] = session_token
       print '[ ' + strftime("%d %b %Y %H:%M:%S", localtime()) + ' ]  [ ' + options['server'] + ' / GetSessionToken: success ]'
       if 'verbose' in options.keys():
-        print session_token, '\n'
+        print re.findall(r'\"CASA-SOAPBODY\">(.+)<\/SOAP-ENV:Body>', session_token)[0], '\n'
     else:
       print '[ ' + strftime("%d %b %Y %H:%M:%S", localtime()) + ' ]  [ ' + options['server'] + ' / GetAuthPolicy: failed ]'
       return 1
@@ -162,7 +164,7 @@ def main():
     if sts_auth_token == True:
       print '[ ' + strftime("%d %b %Y %H:%M:%S", localtime()) + ' ]  [ ' + options['server'] + ' / GetAuthToken: success ]'
       if 'verbose' in options.keys():
-        print auth_token, '\n'
+        print base64.b64decode(re.findall(r'<ident_token_data>(.+)<\/ident_token_data>', auth_token)[0])
     else:
       print '[ ' + strftime("%d %b %Y %H:%M:%S", localtime()) + ' ]  [ ' + options['server'] + ' / GetAuthToken: failed ]'
       return 1
