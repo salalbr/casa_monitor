@@ -8,7 +8,7 @@ __version__ = '0.1'
 __email__ = 'salalbr@gmail.com'
 
 import sys, urllib2, os, re, base64
-from time import strftime, localtime
+from time import strftime, localtime, sleep
 
 def parse_conf(conf_file):
   if os.path.isfile(conf_file):
@@ -65,7 +65,7 @@ def logger(result, log_file='monitor_casa.log'):
   else:
     f.write('[ ' + strftime("%d %b %Y %H:%M:%S", localtime()) + ' ]  [ ' + result['server'] + ' is '\
           + result['status'] + ' ]\n')
-  
+
 def check_authpolicy(options):
   url = 'https://' + options['server'] + ':' + options['port']  + '/CasaAuthTokenSvc/Rpc?method=GetAuthPolicy'
   rpc_call = '<?xml version="1.0" encoding="ISO-8859-1"?>\n<get_auth_policy_req>\n<service>com.novell.zenworks.'\
@@ -74,10 +74,20 @@ def check_authpolicy(options):
   request.add_header('Content-Type', 'text/xml')
   try:
     auth_policy_out = urllib2.urlopen(request).read()
-    auth_policy = re.findall(r'<auth_policy>(.+)<\/auth_policy>', auth_policy_out)[0]
-    auth_policy = base64.b64decode(auth_policy)
-    if '<mechanism>PwdAuthenticate</mechanism>' in auth_policy:
-      return (True, auth_policy)
+    retry = 0
+    while True:
+      if 'OK' in auth_policy_out and '200' in auth_policy_out and '<get_auth_policy_resp>' in auth_policy_out\
+         and '<auth_policy>' in auth_policy_out:
+      # Python 2.6 does not have all operator
+      #if all(item in auth_policy_out for item in ['OK', '200', '<get_auth_policy_resp>', '<auth_policy>']):
+        auth_policy = re.findall(r'<auth_policy>(.+)<\/auth_policy>', auth_policy_out)[0]
+        auth_policy = base64.b64decode(auth_policy)
+        return (True, auth_policy)
+      else:
+        if retry == 5: return (False, None)
+        retry += 1
+        sleep(1)
+        continue
   except urllib2.URLError, e:
     return (False, None)
   
@@ -90,10 +100,20 @@ def check_sessiontoken(options):
   request.add_header('Content-Type', 'text/xml')
   try:
     session_token_out = urllib2.urlopen(request).read()
-    session_token = re.findall(r'<\/lifetime>(.+)<\/session_token>', session_token_out)[0]
-    session_token = base64.b64decode(session_token)
-    if all(item in session_token_out for item in ['OK', '200', 'lifetime', '<auth_resp>']):
-      return (True, session_token)
+    retry = 0
+    while True:
+      if 'OK' in session_token_out and '200' in session_token_out and 'lifetime' in session_token_out\
+         and '</session_token>' in session_token_out:
+      # Python 2.6 does not have all operator
+      #if all(item in session_token_out for item in ['OK', '200', 'lifetime', '<auth_resp>', '</session_token>']):
+        session_token = re.findall(r'<\/lifetime>(.+)<\/session_token>', session_token_out)[0]
+        session_token = base64.b64decode(session_token)
+        return (True, session_token)
+      else:
+        if retry == 5: return (False, None)
+        retry += 1
+        sleep(1)
+        continue
   except urllib2.URLError, e:
     return (False, None)
   
@@ -108,10 +128,20 @@ def check_authtoken(options):
   request.add_header('Content-Type', 'text/xml')
   try:
     auth_token_out = urllib2.urlopen(request).read()
-    auth_token = re.findall(r'<\/lifetime>(.+)<\/auth_token>', auth_token_out)[0]
-    auth_token = base64.b64decode(auth_token)
-    if all(item in auth_token_out for item in ['OK', '200', 'lifetime', '<get_auth_tok_resp>']):
-      return (True, auth_token)
+    retry = 0
+    while True:
+      if 'OK' in auth_token_out and '200' in auth_token_out and 'lifetime' in auth_token_out\
+         and '<get_auth_tok_resp>' in auth_token_out:
+      # Python 2.6 does not have all operator
+      #if all(item in auth_token_out for item in ['OK', '200', 'lifetime', '<get_auth_tok_resp>']):
+        auth_token = re.findall(r'<\/lifetime>(.+)<\/auth_token>', auth_token_out)[0]
+        auth_token = base64.b64decode(auth_token)
+        return (True, auth_token)
+      else:
+        if retry == 5: return (False, None)
+        retry += 1
+        sleep(1)
+        continue
   except urllib2.URLError, e:
     return (False, None)
   
