@@ -129,15 +129,16 @@ def main():
     options = parse_conf(args[1])
     watcher(options)
   else:
+    options= {}
     if '--verbose' in args:
-      options = { 'verbose': True }
+      options['verbose'] = True
       args.remove('--verbose')
     options['server'] = args[0]
     options['port'] = args[1]
     options['realm'] = args[2]
     options['username'] = args[3]
     options['password'] = args[4]
-
+    
     # Get Auth Policy    
     (sts_auth_policy, auth_policy) = check_authpolicy(options)
     if sts_auth_policy == True:
